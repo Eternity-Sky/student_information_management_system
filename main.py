@@ -1,10 +1,13 @@
-import os
 import csv
 import json
+import os
 import tkinter as tk
 from tkinter import ttk
+from tkinter import messagebox
 
 students = []
+
+
 
 def add_student(name, age, gender):
     student = {
@@ -14,6 +17,7 @@ def add_student(name, age, gender):
     }
     students.append(student)
     print("学生信息添加成功！")
+
 
 def search_student(name):
     found_students = []
@@ -29,10 +33,12 @@ def search_student(name):
     else:
         print("未找到该学生信息。")
 
+
 def save_students(file_path):
     with open(file_path, mode='w') as json_file:
         json.dump(students, json_file)
     print("学生信息已成功保存到文件:", file_path)
+
 
 def load_students(file_path):
     try:
@@ -41,6 +47,7 @@ def load_students(file_path):
         print("成功加载学生信息。")
     except FileNotFoundError:
         print("未找到保存的学生信息文件，将创建新的文件。")
+
 
 def export_csv(file_path):
     try:
@@ -53,6 +60,7 @@ def export_csv(file_path):
         print("导出CSV文件成功！")
     except Exception as e:
         print("导出CSV文件失败:", str(e))
+
 
 def add_student_window():
     window = tk.Toplevel()
@@ -92,6 +100,7 @@ def add_student_window():
 
     name_entry.focus()
 
+
 def search_student_window():
     window = tk.Toplevel()
     window.title("搜索学生信息")
@@ -116,12 +125,14 @@ def search_student_window():
 
     name_entry.focus()
 
+
 def display_menu():
     print("\n欢迎使用 学生信息管理系统\n")
     print("请选择要进行的操作：")
     print("1. 添加学生信息")
     print("2. 搜索学生信息")
     print("3. 退出程序")
+
 
 def main():
     json_file_path = os.path.join("lod", "students.json")
@@ -153,8 +164,45 @@ def main():
         export_file_path = os.path.join(directory, "students.csv")
         export_csv(export_file_path)
 
-    def about_callback():
-        print("Github")
+    from tkinter import Tk, Menu, messagebox
+
+    def main():
+        # 创建主窗口
+        root_window = Tk()
+        # 设置窗口标题
+        root_window.title("学生信息管理系统")
+        # 设置窗口尺寸
+        root_window.geometry("400x300")
+        # 设置关闭提示
+        root_window.protocol("WM_DELETE_WINDOW", lambda: on_close(root_window))
+
+        # 创建菜单栏
+        menu_bar = Menu(root_window)
+        root_window.config(menu=menu_bar)
+
+        # 创建文件菜单
+        file_menu = Menu(menu_bar, tearoff=0)
+        file_menu.add_command(label="新建")
+        file_menu.add_command(label="打开")
+        file_menu.add_separator()
+        file_menu.add_command(label="保存")
+        file_menu.add_command(label="退出", command=root_window.quit)
+        menu_bar.add_cascade(label="文件", menu=file_menu)
+
+        # 创建帮助菜单
+        help_menu = Menu(menu_bar, tearoff=0)
+        help_menu.add_command(label="关于我们", command=lambda: about_callback(root_window))
+        menu_bar.add_cascade(label="帮助", menu=help_menu)
+
+        # 显示窗口
+        root_window.mainloop()
+
+    def about_callback(root):
+        # 处理关于菜单项的逻辑
+        messagebox.showinfo("关于", "这是一个学生信息管理系统")
+
+    if __name__ == "__main__":
+        main()
 
     menu_bar = tk.Menu(root)
     file_menu = tk.Menu(menu_bar, tearoff=0)
@@ -170,6 +218,13 @@ def main():
     root.protocol("WM_DELETE_WINDOW", save_students_callback)
 
     root.mainloop()
+
+
+def on_close(root):
+    if messagebox.askokcancel("确认", "确定要关闭窗口吗？"):
+        messagebox.showinfo("感谢使用", "欢迎再次使用！")
+        root.destroy()
+
 
 if __name__ == "__main__":
     main()
