@@ -1,230 +1,104 @@
-import csv
 import json
-import os
-import tkinter as tk
-from tkinter import ttk
+import csv
+from tkinter import *
 from tkinter import messagebox
-
-students = []
-
-
-
-def add_student(name, age, gender):
-    student = {
-        'name': name,
-        'age': age,
-        'gender': gender
-    }
-    students.append(student)
-    print("学生信息添加成功！")
+from tkinter.filedialog import askopenfilename, asksaveasfilename
+from tkinter import simpledialog
 
 
-def search_student(name):
-    found_students = []
-    for student in students:
-        if student['name'] == name:
-            found_students.append(student)
-    if len(found_students) > 0:
-        print("找到以下学生信息:")
-        for student in found_students:
-            print("姓名:", student['name'])
-            print("年龄:", student['age'])
-            print("性别:", student['gender'])
-    else:
-        print("未找到该学生信息。")
+def load_data():
+    filename = askopenfilename(filetypes=[("JSON Files", "*.json")])
+    if filename:
+        with open(filename, "r") as file:
+            data = json.load(file)
+        messagebox.showinfo("成功", "数据加载成功！")
+        return data
 
 
-def save_students(file_path):
-    with open(file_path, mode='w') as json_file:
-        json.dump(students, json_file)
-    print("学生信息已成功保存到文件:", file_path)
+def save_data(data):
+    filename = asksaveasfilename(defaultextension=".json", filetypes=[("JSON Files", "*.json")])
+    if filename:
+        with open(filename, "w") as file:
+            json.dump(data, file, indent=4)
+        messagebox.showinfo("成功", "数据保存成功！")
 
 
-def load_students(file_path):
-    try:
-        with open(file_path, mode='r') as json_file:
-            students.extend(json.load(json_file))
-        print("成功加载学生信息。")
-    except FileNotFoundError:
-        print("未找到保存的学生信息文件，将创建新的文件。")
-
-
-def export_csv(file_path):
-    try:
-        with open(file_path, mode='w', newline='') as csv_file:
-            fieldnames = ['姓名', '年龄', '性别']
-            writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+def export_csv(data):
+    filename = asksaveasfilename(defaultextension=".csv", filetypes=[("CSV Files", "*.csv")])
+    if filename:
+        with open(filename, "w", newline="") as file:
+            writer = csv.DictWriter(file, fieldnames=["姓名", "年龄", "性别"])
             writer.writeheader()
-            for student in students:
-                writer.writerow(student)
-        print("导出CSV文件成功！")
-    except Exception as e:
-        print("导出CSV文件失败:", str(e))
+            writer.writerows(data)
+        messagebox.showinfo("成功", "CSV文件导出成功！")
 
 
-def add_student_window():
-    window = tk.Toplevel()
-    window.title("添加学生信息")
-    window.geometry("300x150")
-
-    def add_student_callback():
-        name = name_entry.get()
-        age = age_entry.get()
-        gender = gender_combobox.get()
-        add_student(name, age, gender)
-        window.destroy()
-
-    name_label = ttk.Label(window, text="姓名：")
-    name_label.grid(column=0, row=0, padx=10, pady=10, sticky=tk.W)
-
-    name_entry = ttk.Entry(window, width=20)
-    name_entry.grid(column=1, row=0, padx=10, pady=10, sticky=(tk.W, tk.E))
-
-    age_label = ttk.Label(window, text="年龄：")
-    age_label.grid(column=0, row=1, padx=10, pady=10, sticky=tk.W)
-
-    age_entry = ttk.Entry(window, width=20)
-    age_entry.grid(column=1, row=1, padx=10, pady=10, sticky=(tk.W, tk.E))
-
-    gender_label = ttk.Label(window, text="性别：")
-    gender_label.grid(column=0, row=2, padx=10, pady=10, sticky=tk.W)
-
-    gender_combobox = ttk.Combobox(window, values=["男", "女"])
-    gender_combobox.grid(column=1, row=2, padx=10, pady=10, sticky=(tk.W, tk.E))
-
-    add_button = ttk.Button(window, text="添加", command=add_student_callback)
-    add_button.grid(column=0, row=3, padx=10, pady=10, sticky=tk.W)
-
-    cancel_button = ttk.Button(window, text="取消", command=window.destroy)
-    cancel_button.grid(column=1, row=3, padx=10, pady=10, sticky=tk.E)
-
-    name_entry.focus()
+def add_student():
+    name = simpledialog.askstring("添加学生信息", "请输入姓名：")
+    if not name:
+        return
+    age = simpledialog.askinteger("添加学生信息", "请输入年龄：")
+    if not age:
+        return
+    gender = simpledialog.askstring("添加学生信息", "请输入性别：")
+    if not gender:
+        return
+    student = {"姓名": name, "年龄": age, "性别": gender}
+    data.append(student)
+    messagebox.showinfo("成功", "学生信息添加成功！")
 
 
-def search_student_window():
-    window = tk.Toplevel()
-    window.title("搜索学生信息")
-    window.geometry("300x100")
-
-    def search_student_callback():
-        name = name_entry.get()
-        search_student(name)
-        window.destroy()
-
-    name_label = ttk.Label(window, text="姓名：")
-    name_label.grid(column=0, row=0, padx=10, pady=10, sticky=tk.W)
-
-    name_entry = ttk.Entry(window, width=20)
-    name_entry.grid(column=1, row=0, padx=10, pady=10, sticky=(tk.W, tk.E))
-
-    search_button = ttk.Button(window, text="搜索", command=search_student_callback)
-    search_button.grid(column=0, row=1, padx=10, pady=10, sticky=tk.W)
-
-    cancel_button = ttk.Button(window, text="取消", command=window.destroy)
-    cancel_button.grid(column=1, row=1, padx=10, pady=10, sticky=tk.E)
-
-    name_entry.focus()
+def search_student():
+    query = simpledialog.askstring("查找学生信息", "请输入学生姓名：")
+    if not query:
+        return
+    result = []
+    for student in data:
+        if query in student.values():
+            result.append(student)
+    if not result:
+        messagebox.showwarning("查询失败", "未找到符合条件的学生信息！")
+    else:
+        messagebox.showinfo("查询结果", f"共找到{len(result)}条符合条件的学生信息：\n{result}")
 
 
-def display_menu():
-    print("\n欢迎使用 学生信息管理系统\n")
-    print("请选择要进行的操作：")
-    print("1. 添加学生信息")
-    print("2. 搜索学生信息")
-    print("3. 退出程序")
+def about():
+    messagebox.showinfo("关于", "这是一个学生信息管理系统\n作者：Leaovo-man2\n开源地址：https://github.com/Leaovo-man2"
+                                "/student_information_management_system")
 
 
 def main():
-    json_file_path = os.path.join("lod", "students.json")
-    csv_file_path = os.path.join("lod", "students.csv")
-    load_students(json_file_path)
-
-    root = tk.Tk()
+    root = Tk()
     root.title("学生信息管理系统")
-    root.geometry("300x100")
 
-    style = ttk.Style(root)
-    style.theme_use("clam")
+    # 创建提示文本
+    prompt_label = Label(root, text="请在菜单栏上操作", font=("Arial", 16))
+    prompt_label.pack(pady=50)
 
-    add_student_button = ttk.Button(root, text="添加学生信息", command=add_student_window)
-    add_student_button.pack(side=tk.LEFT, padx=10, pady=10)
+    menubar = Menu(root)
 
-    search_student_button = ttk.Button(root, text="搜索学生信息", command=search_student_window)
-    search_student_button.pack(side=tk.LEFT, padx=10, pady=10)
+    file_menu = Menu(menubar, tearoff=0)
+    file_menu.add_command(label="加载数据", command=lambda: load_data())
+    file_menu.add_command(label="保存数据", command=lambda: save_data(data))
+    file_menu.add_command(label="导出为CSV", command=lambda: export_csv(data))
+    file_menu.add_separator()
+    file_menu.add_command(label="退出", command=root.quit)
+    menubar.add_cascade(label="文件", menu=file_menu)
 
-    quit_button = ttk.Button(root, text="退出程序", command=root.destroy)
-    quit_button.pack(side=tk.LEFT, padx=10, pady=10)
+    edit_menu = Menu(menubar, tearoff=0)
+    edit_menu.add_command(label="添加学生信息", command=add_student)
+    edit_menu.add_command(label="查找学生信息", command=search_student)
+    menubar.add_cascade(label="编辑", menu=edit_menu)
 
-    def save_students_callback():
-        save_students(json_file_path)
+    help_menu = Menu(menubar, tearoff=0)
+    help_menu.add_command(label="关于", command=about)
+    menubar.add_cascade(label="帮助", menu=help_menu)
 
-    def export_csv_callback():
-        directory = "exports"
-        os.makedirs(directory, exist_ok=True)
-        export_file_path = os.path.join(directory, "students.csv")
-        export_csv(export_file_path)
-
-    from tkinter import Tk, Menu, messagebox
-
-    def main():
-        # 创建主窗口
-        root_window = Tk()
-        # 设置窗口标题
-        root_window.title("学生信息管理系统")
-        # 设置窗口尺寸
-        root_window.geometry("400x300")
-        # 设置关闭提示
-        root_window.protocol("WM_DELETE_WINDOW", lambda: on_close(root_window))
-
-        # 创建菜单栏
-        menu_bar = Menu(root_window)
-        root_window.config(menu=menu_bar)
-
-        # 创建文件菜单
-        file_menu = Menu(menu_bar, tearoff=0)
-        file_menu.add_command(label="新建")
-        file_menu.add_command(label="打开")
-        file_menu.add_separator()
-        file_menu.add_command(label="保存")
-        file_menu.add_command(label="退出", command=root_window.quit)
-        menu_bar.add_cascade(label="文件", menu=file_menu)
-
-        # 创建帮助菜单
-        help_menu = Menu(menu_bar, tearoff=0)
-        help_menu.add_command(label="关于我们", command=lambda: about_callback(root_window))
-        menu_bar.add_cascade(label="帮助", menu=help_menu)
-
-        # 显示窗口
-        root_window.mainloop()
-
-    def about_callback(root):
-        # 处理关于菜单项的逻辑
-        messagebox.showinfo("关于", "这是一个学生信息管理系统")
-
-    if __name__ == "__main__":
-        main()
-
-    menu_bar = tk.Menu(root)
-    file_menu = tk.Menu(menu_bar, tearoff=0)
-    file_menu.add_command(label="保存加载项", command=save_students_callback)
-    file_menu.add_command(label="导出预览", command=export_csv_callback)
-    menu_bar.add_cascade(label="文件", menu=file_menu)
-
-    help_menu = tk.Menu(menu_bar, tearoff=0)
-    help_menu.add_command(label="关于", command=about_callback)
-    menu_bar.add_cascade(label="帮助", menu=help_menu)
-
-    root.config(menu=menu_bar)
-    root.protocol("WM_DELETE_WINDOW", save_students_callback)
-
+    root.config(menu=menubar)
     root.mainloop()
 
 
-def on_close(root):
-    if messagebox.askokcancel("确认", "确定要关闭窗口吗？"):
-        messagebox.showinfo("感谢使用", "欢迎再次使用！")
-        root.destroy()
-
+data = [{}]
 
 if __name__ == "__main__":
     main()
