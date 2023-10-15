@@ -65,7 +65,8 @@ def search_student():
 
 
 def about():
-    messagebox.showinfo("关于", "这是一个学生信息管理系统\n作者：Leaovo-man2\n开源地址：https://github.com/Leaovo-man2/student_information_management_system/")
+    messagebox.showinfo("关于", "这是一个学生信息管理系统\n作者：Leaovo-man2\n开源地址：https://github.com/Leaovo-man2"
+                                "/student_information_management_system/")
 
 
 def main():
